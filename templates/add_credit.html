@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% block title %}Add Credit | Malligai Magal Ledger{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="toggle-group" style="display: flex; gap: 16px; margin-bottom: 24px;">
+        <button id="addTab" class="toggle-btn active" type="button">Add Entry</button>
+        <button id="editTab" class="toggle-btn" type="button">Edit Entry</button>
+    </div>
+    <div id="formSection">
+        <h2 id="formTitle">Add Credit Entry</h2>
+        <form method="POST" id="creditForm">
+            <label for="area">Area</label>
+            <select name="area" id="area" required>
+                <option value="">-- Select Area --</option>
+                {% for agent in agents %}
+                    <option value="{{ agent.area }}">{{ agent.area }}</option>
+                {% endfor %}
+            </select>
+            <label for="agent_name">Agent</label>
+            <input type="text" name="agent_name" id="agent_name" readonly>
+            <label for="agent_code">Agent Code</label>
+            <input type="text" name="agent_code" id="agent_code" readonly>
+            <label for="old_balance">Old Balance</label>
+            <input type="number" name="old_balance" step="0.01" id="old_balance" readonly>
+            <label for="entry_date">Entry Date</label>
+            <input type="date" name="entry_date" id="entry_date" required>
+            <label for="credit_date">Credit Date</label>
+            <input type="date" name="credit_date" id="credit_date" required>
+            <div class="section-header" style="grid-column: 1 / -1; margin-top: 18px; font-weight: bold;">Return Count</div>
+            <div class="return-group" style="grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 12px 24px;">
+                <div><label>Malligai Magal</label><input type="number" name="ret_count_MM" id="ret_count_MM"></div>
+                <div><label>Nalla sapadu</label><input type="number" name="ret_count_NS" id="ret_count_NS"></div>
+                <div><label>Suba varam</label><input type="number" name="ret_count_SV" id="ret_count_SV"></div>
+                <div><label>Valli</label><input type="number" name="ret_count_Valli" id="ret_count_Valli"></div>
+                <div><label>Vani</label><input type="number" name="ret_count_Vani" id="ret_count_Vani"></div>
+                <div><label>Azhagi</label><input type="number" name="ret_count_Azhagi" id="ret_count_Azhagi"></div>
+                <div><label>Arasi</label><input type="number" name="ret_count_Arasi" id="ret_count_Arasi"></div>
+                <div><label>Thriller</label><input type="number" name="ret_count_Thriller" id="ret_count_Thriller"></div>
+            </div>
+            <div class="section-header" style="grid-column: 1 / -1; margin-top: 18px; font-weight: bold;">Other Details</div>
+            <label for="extras">Extras</label>
+            <input type="number" name="extras" step="0.01" id="extras">
+            <label for="Incentive">Incentive</label>
+            <input type="number" name="Incentive" step="0.01" id="Incentive">
+            <label for="Transport">Transport</label>
+            <input type="number" name="Transport" step="0.01" id="Transport">
+            <label for="Postal_Courier">Postal Courier</label>
+            <input type="number" name="Postal_Courier" step="0.01" id="Postal_Courier">
+            <label for="credit_Amount">Calculated Credit Amount</label>
+            <input type="number" name="credit_Amount" step="0.01" id="credit_Amount" readonly>
+            <div style="grid-column: 1 / -1; text-align: center; margin-top: 18px;">
+                <input type="submit" id="submitBtn" value="Add Credit" style="width: 60%;">
+            </div>
+        </form>
+        {% if message %}
+            <div class="msg">{{ message }}</div>
+        {% endif %}
+    </div>
+    <div id="editSection" style="display:none;">
+        <h2>Edit Credit Entries</h2>
+        <div style="margin-bottom: 16px;">
+            <label for="editArea">Area</label>
+            <select id="editArea">
+                <option value="">-- Select Area --</option>
+                {% for agent in agents %}
+                    <option value="{{ agent.area }}">{{ agent.area }}</option>
+                {% endfor %}
+            </select>
+            <label for="editMonth">Month</label>
+            <select id="editMonth"></select>
+            <label for="editYear">Year</label>
+            <select id="editYear"></select>
+            <button id="loadCredits" type="button">Load</button>
+        </div>
+        <table id="creditTable" class="edit-table" style="width:100%; margin-bottom: 24px; display:none;">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Entry Date</th><th>Credit Date</th><th>Amount</th><th>Agent</th><th>Edit</th><th>Delete</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const agentData = JSON.parse('{{ agent_data | tojson | safe }}');
+// Toggle logic
+const addTab = document.getElementById('addTab');
+const editTab = document.getElementById('editTab');
+const formSection = document.getElementById('formSection');
+const editSection = document.getElementById('editSection');
+addTab.onclick = function() {
+    addTab.classList.add('active'); editTab.classList.remove('active');
+    formSection.style.display = '';
+    editSection.style.display = 'none';
+    document.getElementById('formTitle').textContent = 'Add Credit Entry';
+    document.getElementById('submitBtn').value = 'Add Credit';
+    document.getElementById('creditForm').reset();
+    document.getElementById('area').removeAttribute('disabled');
+    document.getElementById('agent_name').removeAttribute('disabled');
+    document.getElementById('agent_code').removeAttribute('disabled');
+    document.getElementById('old_balance').removeAttribute('disabled');
+    document.getElementById('entry_date').removeAttribute('disabled');
+    document.getElementById('credit_date').removeAttribute('disabled');
+    document.getElementById('ret_count_MM').removeAttribute('disabled');
+    document.getElementById('ret_count_NS').removeAttribute('disabled');
+    document.getElementById('ret_count_SV').removeAttribute('disabled');
+    document.getElementById('ret_count_Valli').removeAttribute('disabled');
+    document.getElementById('ret_count_Vani').removeAttribute('disabled');
+    document.getElementById('ret_count_Azhagi').removeAttribute('disabled');
+    document.getElementById('ret_count_Arasi').removeAttribute('disabled');
+    document.getElementById('ret_count_Thriller').removeAttribute('disabled');
+};
+editTab.onclick = function() {
+    editTab.classList.add('active'); addTab.classList.remove('active');
+    formSection.style.display = 'none';
+    editSection.style.display = '';
+    document.getElementById('formTitle').textContent = 'Edit Credit Entry';
+    document.getElementById('submitBtn').value = 'Update Credit';
+    document.getElementById('creditForm').reset();
+    document.getElementById('area').setAttribute('disabled', 'disabled');
+    document.getElementById('agent_name').setAttribute('disabled', 'disabled');
+    document.getElementById('agent_code').setAttribute('disabled', 'disabled');
+    document.getElementById('old_balance').setAttribute('disabled', 'disabled');
+    document.getElementById('entry_date').setAttribute('disabled', 'disabled');
+    document.getElementById('credit_date').setAttribute('disabled', 'disabled');
+    document.getElementById('ret_count_MM').setAttribute('disabled', 'disabled');
+    document.getElementById('ret_count_NS').setAttribute('disabled', 'disabled');
+    document.getElementById('ret_count_SV').setAttribute('disabled', 'disabled');
+    document.getElementById('ret_count_Valli').setAttribute('disabled', 'disabled');
+    document.getElementById('ret_count_Vani').setAttribute('disabled', 'disabled');
+    document.getElementById('ret_count_Azhagi').setAttribute('disabled', 'disabled');
+    document.getElementById('ret_count_Arasi').setAttribute('disabled', 'disabled');
+    document.getElementById('ret_count_Thriller').setAttribute('disabled', 'disabled');
+};
+// Populate agent details in Add form
+if(document.getElementById('area')) {
+    document.getElementById('area').addEventListener('change', function() {
+        const area = this.value;
+        const agent = agentData.find(a => a.area === area);
+        if (agent) {
+            document.getElementById('agent_name').value = agent.agent_Name;
+            document.getElementById('agent_code').value = agent.agent_Code;
+            document.getElementById('old_balance').value = agent.old_balance;
+        } else {
+            document.getElementById('agent_name').value = '';
+            document.getElementById('agent_code').value = '';
+            document.getElementById('old_balance').value = '';
+        }
+    });
+}
+// Auto-calculate credit amount
+function getVal(id) {
+    return parseFloat(document.getElementById(id).value) || 0;
+}
+function calculateCredit() {
+    let base40 = getVal('ret_count_MM') + getVal('ret_count_Valli') + getVal('ret_count_Vani') +
+                 getVal('ret_count_Azhagi') + getVal('ret_count_Arasi') + getVal('ret_count_Thriller');
+    let base50 = getVal('ret_count_NS') + getVal('ret_count_SV');
+    let total = (base40 * 40) + (base50 * 50);
+    let discount = total * 0.25;
+    let credit = total - discount + getVal('Incentive') + getVal('Transport') + getVal('Postal_Courier') + getVal('extras');
+    document.getElementById('credit_Amount').value = credit.toFixed(2);
+}
+const creditInputs = [
+    'ret_count_MM', 'ret_count_NS', 'ret_count_SV', 'ret_count_Valli', 'ret_count_Vani',
+    'ret_count_Azhagi', 'ret_count_Arasi', 'ret_count_Thriller', 'Incentive', 'Transport', 'Postal_Courier', 'extras'
+];
+creditInputs.forEach(id => {
+    document.getElementById(id).addEventListener('input', calculateCredit);
+});
+window.onload = calculateCredit;
+// Edit tab: populate month/year dropdowns
+function populateMonthYear() {
+    const now = new Date();
+    const monthSel = document.getElementById('editMonth');
+    const yearSel = document.getElementById('editYear');
+    monthSel.innerHTML = '';
+    yearSel.innerHTML = '';
+    for(let m=1; m<=12; m++) {
+        const opt = document.createElement('option');
+        opt.value = m; opt.text = m;
+        if(m === now.getMonth()+1) opt.selected = true;
+        monthSel.appendChild(opt);
+    }
+    for(let y=now.getFullYear()-2; y<=now.getFullYear(); y++) {
+        const opt = document.createElement('option');
+        opt.value = y; opt.text = y;
+        if(y === now.getFullYear()) opt.selected = true;
+        yearSel.appendChild(opt);
+    }
+}
+populateMonthYear();
+// Load credits for edit
+const loadBtn = document.getElementById('loadCredits');
+loadBtn.onclick = function() {
+    const area = document.getElementById('editArea').value;
+    const month = document.getElementById('editMonth').value;
+    const year = document.getElementById('editYear').value;
+    if(!area || !month || !year) return;
+    fetch(`/list_credits?area=${area}&month=${month}&year=${year}`)
+        .then(r => r.json())
+        .then(data => {
+            const table = document.getElementById('creditTable');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            if(data.length === 0) { table.style.display = 'none'; return; }
+            table.style.display = '';
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.id}</td><td>${row.entry_date}</td><td>${row.credit_date}</td><td>${row.credit_Amount}</td><td>${row.agent_name}</td>` +
+                    `<td><button ${!row.editable ? 'disabled title=\"Locked by bill\"' : ''} onclick=\"editCredit(${row.id})\">Edit</button></td>` +
+                    `<td><button ${!row.deletable ? 'disabled title=\"Locked by bill\"' : ''} onclick=\"deleteCredit(${row.id})\">Delete</button></td>`;
+                tbody.appendChild(tr);
+            });
+        });
+};
+// Edit credit logic (update form and enable calculation)
+window.editCredit = function(id) {
+    fetch(`/edit_credit/${id}`)
+        .then(r => r.json())
+        .then(data => {
+            if(!data.editable) return alert('Cannot edit: Bill already exists for this agent/area/month.');
+            
+            // Switch to Add tab and show form
+            addTab.classList.add('active'); 
+            editTab.classList.remove('active');
+            formSection.style.display = '';
+            editSection.style.display = 'none';
+            
+            // Update form for editing
+            document.getElementById('formTitle').textContent = 'Edit Credit Entry';
+            document.getElementById('submitBtn').value = 'Update Credit';
+            document.getElementById('creditForm').setAttribute('action', `/edit_credit/${id}`);
+            document.getElementById('creditForm').setAttribute('method', 'POST');
+            
+            // Fill form fields
+            document.getElementById('area').value = data.area;
+            document.getElementById('agent_name').value = data.agent_name;
+            document.getElementById('agent_code').value = data.agent_code;
+            document.getElementById('old_balance').value = data.old_balance;
+            document.getElementById('entry_date').value = data.entry_date;
+            document.getElementById('credit_date').value = data.credit_date;
+            document.getElementById('ret_count_MM').value = data.ret_count_MM;
+            document.getElementById('ret_count_NS').value = data.ret_count_NS;
+            document.getElementById('ret_count_SV').value = data.ret_count_SV;
+            document.getElementById('ret_count_Valli').value = data.ret_count_Valli;
+            document.getElementById('ret_count_Vani').value = data.ret_count_Vani;
+            document.getElementById('ret_count_Azhagi').value = data.ret_count_Azhagi;
+            document.getElementById('ret_count_Arasi').value = data.ret_count_Arasi;
+            document.getElementById('ret_count_Thriller').value = data.ret_count_Thriller;
+            document.getElementById('extras').value = data.extras;
+            document.getElementById('Incentive').value = data.Incentive;
+            document.getElementById('Transport').value = data.Transport;
+            document.getElementById('Postal_Courier').value = data.Postal_Courier;
+            document.getElementById('credit_Amount').value = data.credit_Amount;
+            
+            // Enable all fields for editing
+            document.getElementById('area').removeAttribute('disabled');
+            document.getElementById('agent_name').removeAttribute('disabled');
+            document.getElementById('agent_code').removeAttribute('disabled');
+            document.getElementById('old_balance').removeAttribute('disabled');
+            document.getElementById('entry_date').removeAttribute('disabled');
+            document.getElementById('credit_date').removeAttribute('disabled');
+            document.getElementById('ret_count_MM').removeAttribute('disabled');
+            document.getElementById('ret_count_NS').removeAttribute('disabled');
+            document.getElementById('ret_count_SV').removeAttribute('disabled');
+            document.getElementById('ret_count_Valli').removeAttribute('disabled');
+            document.getElementById('ret_count_Vani').removeAttribute('disabled');
+            document.getElementById('ret_count_Azhagi').removeAttribute('disabled');
+            document.getElementById('ret_count_Arasi').removeAttribute('disabled');
+            document.getElementById('ret_count_Thriller').removeAttribute('disabled');
+            document.getElementById('extras').removeAttribute('disabled');
+            document.getElementById('Incentive').removeAttribute('disabled');
+            document.getElementById('Transport').removeAttribute('disabled');
+            document.getElementById('Postal_Courier').removeAttribute('disabled');
+            
+            // Enable calculation in edit mode
+            creditInputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', calculateCredit);
+            });
+            calculateCredit();
+        });
+};
+// Delete credit logic
+window.deleteCredit = function(id) {
+    if(!confirm('Are you sure you want to delete this credit?')) return;
+    fetch(`/delete_credit/${id}`, {method:'POST'})
+        .then(r => r.json())
+        .then(resp => {
+            if(resp.success) {
+                alert('Deleted successfully!');
+                loadBtn.onclick();
+            } else {
+                alert(resp.error || 'Delete failed.');
+            }
+        });
+};
+</script>
+{% if success %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        showSuccessModal('Credit entry added successfully!', '/', '/add_credit');
+    });
+</script>
+{% endif %}
+
+<style>
+/* Simple and neat return-group styling */
+.return-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+.return-group > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 100px;
+}
+
+.return-group > div label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #374151;
+}
+
+.return-group > div input {
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.return-group > div input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .return-group {
+        gap: 12px;
+        padding: 12px;
+    }
+    
+    .return-group > div {
+        min-width: 80px;
+    }
+}
+</style>
+
+{% endblock %} 

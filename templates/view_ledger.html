@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="ledger-view-container">
+    <h2>Ledger Records</h2>
+    <div style="overflow-x:auto;">
+    <table id="ledgerTable" class="modern-table">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Entry date<br>
+                <select class="filter-select" id="entryMonth" onchange="filterTable()">
+                    <option value="">Month</option>
+                </select>
+                <select class="filter-select" id="entryYear" onchange="filterTable()">
+                    <option value="">Year</option>
+                </select>
+            </th>
+            <th>Ledger Type<br>
+                <select class="filter-select" id="ledgerTypeFilter" onchange="filterTable()">
+                    <option value="">All</option>
+                </select>
+            </th>
+            <th>Area<br>
+                <select class="filter-select" id="areaFilter" onchange="filterTable()">
+                    <option value="">All</option>
+                </select>
+            </th>
+            <th>Agent Code</th>
+            <th>Agent Name<br>
+                <select class="filter-select" id="agentNameFilter" onchange="filterTable()">
+                    <option value="">All</option>
+                </select>
+            </th>
+            <th>Agent Phone</th>
+            <th>Agent Address</th>
+            <th>Old Balance</th>
+            <th>Bill Date<br>
+                <select class="filter-select" id="billMonth" onchange="filterTable()">
+                    <option value="">Month</option>
+                </select>
+                <select class="filter-select" id="billYear" onchange="filterTable()">
+                    <option value="">Year</option>
+                </select>
+            </th>
+            <th>Bill Amount</th>
+            <th>Receipt Date<br>
+                <select class="filter-select" id="receiptMonth" onchange="filterTable()">
+                    <option value="">Month</option>
+                </select>
+                <select class="filter-select" id="receiptYear" onchange="filterTable()">
+                    <option value="">Year</option>
+                </select>
+            </th>
+            <th>Receipt Amount</th>
+            <th>Credit Date<br>
+                <select class="filter-select" id="creditMonth" onchange="filterTable()">
+                    <option value="">Month</option>
+                </select>
+                <select class="filter-select" id="creditYear" onchange="filterTable()">
+                    <option value="">Year</option>
+                </select>
+            </th>
+            <th>Credit Amount</th>
+            <th>New Balance</th>
+            <th>MM</th>
+            <th>NS</th>
+            <th>SV</th>
+            <th>Valli</th>
+            <th>Vani</th>
+            <th>Azhagi</th>
+            <th>Arasi</th>
+            <th>Thriller</th>
+            <th>Ret MM</th>
+            <th>Ret NS</th>
+            <th>Ret SV</th>
+            <th>Ret Valli</th>
+            <th>Ret Vani</th>
+            <th>Ret Azhagi</th>
+            <th>Ret Arasi</th>
+            <th>Ret Thriller</th>
+            <th>Extras</th>
+            <th>Incentive</th>
+            <th>Transport</th>
+            <th>Postal/Courier</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in ledgers %}
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.entry_date or '' }}</td>
+            <td>{{ row.ledger_type or '' }}</td>
+            <td>{{ row.area or '' }}</td>
+            <td>{{ row.agent_Code or '' }}</td>
+            <td>{{ row.agent.agent_Name if row.agent else '' }}</td>
+            <td>{{ row.agent.agent_Phonenumber if row.agent else '' }}</td>
+            <td>{{ row.agent.agent_Address if row.agent else '' }}</td>
+            <td>{{ row.old_balance_Amount or '' }}</td>
+            <td>{{ row.bill_date or '' }}</td>
+            <td>{{ row.bill_Amount or '' }}</td>
+            <td>{{ row.receipt_date or '' }}</td>
+            <td>{{ row.receipt_Amount or '' }}</td>
+            <td>{{ row.credit_date or '' }}</td>
+            <td>{{ row.credit_Amount or '' }}</td>
+            <td>{{ row.new_balance_Amount or '' }}</td>
+            <td>{{ row.count_MM or '' }}</td>
+            <td>{{ row.count_NS or '' }}</td>
+            <td>{{ row.count_SV or '' }}</td>
+            <td>{{ row.count_Valli or '' }}</td>
+            <td>{{ row.count_Vani or '' }}</td>
+            <td>{{ row.count_Azhagi or '' }}</td>
+            <td>{{ row.count_Arasi or '' }}</td>
+            <td>{{ row.count_Thriller or '' }}</td>
+            <td>{{ row.ret_count_MM or '' }}</td>
+            <td>{{ row.ret_count_NS or '' }}</td>
+            <td>{{ row.ret_count_SV or '' }}</td>
+            <td>{{ row.ret_count_Valli or '' }}</td>
+            <td>{{ row.ret_count_Vani or '' }}</td>
+            <td>{{ row.ret_count_Azhagi or '' }}</td>
+            <td>{{ row.ret_count_Arasi or '' }}</td>
+            <td>{{ row.ret_count_Thriller or '' }}</td>
+            <td>{{ row.extras or '' }}</td>
+            <td>{{ row.Incentive or '' }}</td>
+            <td>{{ row.Transport or '' }}</td>
+            <td>{{ row.Postal_Courier or '' }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <br>
+    <button onclick="window.print()">🖨️ Print</button>
+</div>
+<style>
+.ledger-view-container {
+    max-width: 98vw;
+    margin: 0 auto;
+    padding: 24px 0;
+}
+.modern-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+    background: #fff;
+    box-shadow: 0 2px 8px #e5e7eb;
+}
+.modern-table th, .modern-table td {
+    border: 1px solid #e5e7eb;
+    padding: 6px 8px;
+    text-align: center;
+}
+.modern-table th {
+    background: #f3f4f6;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+.filter-select {
+    width: 90%;
+    font-size: 12px;
+    padding: 2px 4px;
+    margin-top: 2px;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+}
+@media (max-width: 900px) {
+    .modern-table th, .modern-table td {
+        font-size: 11px;
+        padding: 4px 2px;
+    }
+    .filter-select {
+        font-size: 10px;
+    }
+}
+</style>
+<script>
+// Helper to get unique values from a column
+function getUniqueColumnValues(table, colIdx) {
+    const values = new Set();
+    for (let i = 1; i < table.rows.length; i++) {
+        const val = table.rows[i].cells[colIdx].textContent.trim();
+        if (val) values.add(val);
+    }
+    return Array.from(values).sort();
+}
+// Helper to get unique months/years from a date column
+function getUniqueMonthsYears(table, colIdx) {
+    const months = new Set();
+    const years = new Set();
+    for (let i = 1; i < table.rows.length; i++) {
+        const val = table.rows[i].cells[colIdx].textContent.trim();
+        if (val && val.length >= 7) {
+            const [y, m] = val.split('-');
+            years.add(y);
+            months.add(m);
+        }
+    }
+    return {months: Array.from(months).sort(), years: Array.from(years).sort()};
+}
+function populateDropdowns() {
+    const table = document.getElementById('ledgerTable');
+    // Ledger Type
+    const ledgerTypeSel = document.getElementById('ledgerTypeFilter');
+    getUniqueColumnValues(table, 2).forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val; opt.text = val;
+        ledgerTypeSel.appendChild(opt);
+    });
+    // Area
+    const areaSel = document.getElementById('areaFilter');
+    getUniqueColumnValues(table, 3).forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val; opt.text = val;
+        areaSel.appendChild(opt);
+    });
+    // Agent Name
+    const agentSel = document.getElementById('agentNameFilter');
+    getUniqueColumnValues(table, 5).forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val; opt.text = val;
+        agentSel.appendChild(opt);
+    });
+    // Entry Date
+    const entry = getUniqueMonthsYears(table, 1);
+    const entryMonthSel = document.getElementById('entryMonth');
+    const entryYearSel = document.getElementById('entryYear');
+    entry.months.forEach(m => { let opt = document.createElement('option'); opt.value = m; opt.text = m; entryMonthSel.appendChild(opt); });
+    entry.years.forEach(y => { let opt = document.createElement('option'); opt.value = y; opt.text = y; entryYearSel.appendChild(opt); });
+    // Bill Date
+    const bill = getUniqueMonthsYears(table, 9);
+    const billMonthSel = document.getElementById('billMonth');
+    const billYearSel = document.getElementById('billYear');
+    bill.months.forEach(m => { let opt = document.createElement('option'); opt.value = m; opt.text = m; billMonthSel.appendChild(opt); });
+    bill.years.forEach(y => { let opt = document.createElement('option'); opt.value = y; opt.text = y; billYearSel.appendChild(opt); });
+    // Receipt Date
+    const receipt = getUniqueMonthsYears(table, 11);
+    const receiptMonthSel = document.getElementById('receiptMonth');
+    const receiptYearSel = document.getElementById('receiptYear');
+    receipt.months.forEach(m => { let opt = document.createElement('option'); opt.value = m; opt.text = m; receiptMonthSel.appendChild(opt); });
+    receipt.years.forEach(y => { let opt = document.createElement('option'); opt.value = y; opt.text = y; receiptYearSel.appendChild(opt); });
+    // Credit Date
+    const credit = getUniqueMonthsYears(table, 13);
+    const creditMonthSel = document.getElementById('creditMonth');
+    const creditYearSel = document.getElementById('creditYear');
+    credit.months.forEach(m => { let opt = document.createElement('option'); opt.value = m; opt.text = m; creditMonthSel.appendChild(opt); });
+    credit.years.forEach(y => { let opt = document.createElement('option'); opt.value = y; opt.text = y; creditYearSel.appendChild(opt); });
+}
+function filterTable() {
+    const table = document.getElementById('ledgerTable');
+    const ledgerType = document.getElementById('ledgerTypeFilter').value;
+    const area = document.getElementById('areaFilter').value;
+    const agent = document.getElementById('agentNameFilter').value;
+    const entryMonth = document.getElementById('entryMonth').value;
+    const entryYear = document.getElementById('entryYear').value;
+    const billMonth = document.getElementById('billMonth').value;
+    const billYear = document.getElementById('billYear').value;
+    const receiptMonth = document.getElementById('receiptMonth').value;
+    const receiptYear = document.getElementById('receiptYear').value;
+    const creditMonth = document.getElementById('creditMonth').value;
+    const creditYear = document.getElementById('creditYear').value;
+    for (let i = 1; i < table.rows.length; i++) {
+        const row = table.rows[i];
+        let show = true;
+        // Ledger Type
+        if (ledgerType && row.cells[2].textContent.trim() !== ledgerType) show = false;
+        // Area
+        if (area && row.cells[3].textContent.trim() !== area) show = false;
+        // Agent Name
+        if (agent && row.cells[5].textContent.trim() !== agent) show = false;
+        // Entry Date
+        if (entryMonth || entryYear) {
+            const val = row.cells[1].textContent.trim();
+            if (val.length >= 7) {
+                const [y, m] = val.split('-');
+                if (entryMonth && m !== entryMonth) show = false;
+                if (entryYear && y !== entryYear) show = false;
+            } else if (entryMonth || entryYear) {
+                show = false;
+            }
+        }
+        // Bill Date
+        if (billMonth || billYear) {
+            const val = row.cells[9].textContent.trim();
+            if (val.length >= 7) {
+                const [y, m] = val.split('-');
+                if (billMonth && m !== billMonth) show = false;
+                if (billYear && y !== billYear) show = false;
+            } else if (billMonth || billYear) {
+                show = false;
+            }
+        }
+        // Receipt Date
+        if (receiptMonth || receiptYear) {
+            const val = row.cells[11].textContent.trim();
+            if (val.length >= 7) {
+                const [y, m] = val.split('-');
+                if (receiptMonth && m !== receiptMonth) show = false;
+                if (receiptYear && y !== receiptYear) show = false;
+            } else if (receiptMonth || receiptYear) {
+                show = false;
+            }
+        }
+        // Credit Date
+        if (creditMonth || creditYear) {
+            const val = row.cells[13].textContent.trim();
+            if (val.length >= 7) {
+                const [y, m] = val.split('-');
+                if (creditMonth && m !== creditMonth) show = false;
+                if (creditYear && y !== creditYear) show = false;
+            } else if (creditMonth || creditYear) {
+                show = false;
+            }
+        }
+        row.style.display = show ? '' : 'none';
+    }
+}
+document.addEventListener('DOMContentLoaded', populateDropdowns);
+</script>
+{% endblock %}

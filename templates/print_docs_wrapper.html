@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print Documents</title>
+</head>
+<body onload="window.print()">
+    {% for block in blocks %}
+        {{ block|safe }}
+        <br><br>
+    {% endfor %}
+</body>
+</html> 

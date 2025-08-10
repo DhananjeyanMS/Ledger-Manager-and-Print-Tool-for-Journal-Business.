@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard | Malligai Magal Ledger{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="dashboard-logo">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Malligai Magal Ledger Management System</p>
+        <form id="monthYearForm" method="get" style="margin-top: 18px; display: flex; justify-content: center; gap: 12px;">
+            <label for="month" style="color:white;">Month:</label>
+            <select id="month" name="month" onchange="this.form.submit()">
+                {% for m in range(1, 13) %}
+                    <option value="{{ m }}" {% if m == current_month %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+            </select>
+            <label for="year" style="color:white;">Year:</label>
+            <select id="year" name="year" onchange="this.form.submit()">
+                {% for y in range(current_year-2, current_year+2) %}
+                    <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <div class="date-info">
+            <span class="current-month">{{ current_month }}/{{ current_year }}</span>
+        </div>
+    </div>
+    <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-icon">👥</div><div class="metric-content"><h3>Total Agents</h3><div class="metric-value">{{ total_agents }}</div></div></div>
+        <div class="metric-card"><div class="metric-icon">💰</div><div class="metric-content"><h3>Total Bills</h3><div class="metric-value">₹{{ '%.2f'|format(total_monthly_bills) }}</div></div></div>
+        <div class="metric-card"><div class="metric-icon">📥</div><div class="metric-content"><h3>Total Receipts</h3><div class="metric-value">₹{{ '%.2f'|format(total_monthly_receipts) }}</div></div></div>
+        <div class="metric-card"><div class="metric-icon">📤</div><div class="metric-content"><h3>Total Credits</h3><div class="metric-value">₹{{ '%.2f'|format(total_monthly_credits) }}</div></div></div>
+        <div class="metric-card highlight"><div class="metric-icon">📊</div><div class="metric-content"><h3>Net Sales</h3><div class="metric-value {% if total_net_sales >= 0 %}positive{% else %}negative{% endif %}">₹{{ '%.2f'|format(total_net_sales) }}</div></div></div>
+    </div>
+    <div class="metrics-grid" style="margin-bottom: 2rem;">
+        <div class="metric-card"><div class="metric-icon">💼</div><div class="metric-content"><h3>Total Balance</h3><div class="metric-value">₹{{ '%.2f'|format(total_balance) }}</div></div></div>
+        <div class="metric-card"><div class="metric-icon">🧾</div><div class="metric-content"><h3>Total Extras</h3><div class="metric-value">₹{{ '%.2f'|format(total_extras) }}</div></div></div>
+        <div class="metric-card"><div class="metric-icon">🚚</div><div class="metric-content"><h3>Total Transport</h3><div class="metric-value">₹{{ '%.2f'|format(total_transport) }}</div></div></div>
+        <div class="metric-card"><div class="metric-icon">🎁</div><div class="metric-content"><h3>Total Incentive</h3><div class="metric-value">₹{{ '%.2f'|format(total_incentive) }}</div></div></div>
+        <div class="metric-card"><div class="metric-icon">📦</div><div class="metric-content"><h3>Total Postal</h3><div class="metric-value">₹{{ '%.2f'|format(total_postal) }}</div></div></div>
+    </div>
+    <div class="table-section">
+        <h3>Agent-wise Metrics</h3>
+        <div class="table-container">
+            <table class="data-table">
+                <thead><tr><th>Agent</th><th>Area</th><th>Bills</th><th>Receipts</th><th>Credits</th><th>Extras</th><th>Transport</th><th>Incentive</th><th>Postal</th><th>Balance</th><th>% Improve</th></tr></thead>
+                <tbody>
+                {% for row in agent_metrics %}
+                <tr>
+                    <td>{{ row.agent_name }}</td>
+                    <td>{{ row.area }}</td>
+                    <td>₹{{ '%.2f'|format(row.bills) }}</td>
+                    <td>₹{{ '%.2f'|format(row.receipts) }}</td>
+                    <td>₹{{ '%.2f'|format(row.credits) }}</td>
+                    <td>₹{{ '%.2f'|format(row.extras) }}</td>
+                    <td>₹{{ '%.2f'|format(row.transport) }}</td>
+                    <td>₹{{ '%.2f'|format(row.incentive) }}</td>
+                    <td>₹{{ '%.2f'|format(row.postal) }}</td>
+                    <td>₹{{ '%.2f'|format(row.new_balance) }}</td>
+                    <td>{% if row.percent_improve >= 0 %}<span class="positive">+{{ '%.1f'|format(row.percent_improve) }}%</span>{% else %}<span class="negative">{{ '%.1f'|format(row.percent_improve) }}%</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="table-section">
+        <h3>Monthwise Metrics ({{ current_year }})</h3>
+        <div class="table-container">
+            <table class="data-table">
+                <thead><tr><th>Month</th><th>Bills</th><th>Receipts</th><th>Credits</th><th>Extras</th><th>Transport</th><th>Incentive</th><th>Postal</th></tr></thead>
+                <tbody>
+                {% for row in monthwise_metrics %}
+                <tr>
+                    <td>{{ row.month }}</td>
+                    <td>₹{{ '%.2f'|format(row.bills) }}</td>
+                    <td>₹{{ '%.2f'|format(row.receipts) }}</td>
+                    <td>₹{{ '%.2f'|format(row.credits) }}</td>
+                    <td>₹{{ '%.2f'|format(row.extras) }}</td>
+                    <td>₹{{ '%.2f'|format(row.transport) }}</td>
+                    <td>₹{{ '%.2f'|format(row.incentive) }}</td>
+                    <td>₹{{ '%.2f'|format(row.postal) }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="table-section">
+        <h3>Sales, Credits, Receipts - Line Graphs</h3>
+        <canvas id="overallLineChart" height="80"></canvas>
+        <div style="margin-top: 24px;">
+            <label for="agentLineSelect">Agent-wise Line Graph: </label>
+            <select id="agentLineSelect"></select>
+        </div>
+        <canvas id="agentLineChart" height="80"></canvas>
+    </div>
+    <div class="recent-section">
+        <h3>Recent Ledger Entries</h3>
+        <div class="table-container">
+            <table class="data-table">
+                <thead><tr><th>Date</th><th>Agent</th><th>Type</th><th>Amount</th><th>Area</th></tr></thead>
+                <tbody>
+                {% if recent_entries %}
+                    {% for entry in recent_entries %}
+                    <tr>
+                        <td>{{ entry.entry_date.strftime('%Y-%m-%d') if entry.entry_date else 'N/A' }}</td>
+                        <td>{{ entry.agent.agent_Name if entry.agent else 'N/A' }}</td>
+                        <td><span class="type-badge {{ entry.ledger_type or 'unknown' }}">{{ (entry.ledger_type or 'unknown').title() }}</span></td>
+                        <td>{% if entry.ledger_type == 'receipt' %}₹{{ '%.2f'|format(entry.receipt_Amount or 0) }}{% elif entry.ledger_type == 'credit' %}₹{{ '%.2f'|format(entry.credit_Amount or 0) }}{% elif entry.ledger_type == 'bill' %}₹{{ '%.2f'|format(entry.bill_Amount or 0) }}{% else %}₹0.00{% endif %}</td>
+                        <td>{{ entry.area or 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="5" style="text-align: center; color: #6b7280;">No recent entries found</td></tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartData = {{ chart_data|tojson|safe }};
+const agentMetrics = {{ agent_metrics|tojson|safe }};
+// Overall line chart
+const ctx = document.getElementById('overallLineChart').getContext('2d');
+const overallLineChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: chartData.labels,
+        datasets: [
+            { label: 'Sales', data: chartData.sales, borderColor: '#1976d2', backgroundColor: 'rgba(25,118,210,0.1)', fill: false },
+            { label: 'Credits', data: chartData.credits, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: false },
+            { label: 'Receipts', data: chartData.receipts, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: false }
+        ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'top' } } }
+});
+// Agent-wise line chart
+const agentSelect = document.getElementById('agentLineSelect');
+const agentNames = Object.keys(chartData.agent_chart_data);
+agentNames.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name; opt.text = name;
+    agentSelect.appendChild(opt);
+});
+function renderAgentLineChart(agentName) {
+    const data = chartData.agent_chart_data[agentName];
+    if (!data) return;
+    if (window.agentLineChartObj) window.agentLineChartObj.destroy();
+    const ctx2 = document.getElementById('agentLineChart').getContext('2d');
+    window.agentLineChartObj = new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [
+                { label: 'Sales', data: data.sales, borderColor: '#1976d2', backgroundColor: 'rgba(25,118,210,0.1)', fill: false },
+                { label: 'Credits', data: data.credits, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: false },
+                { label: 'Receipts', data: data.receipts, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: false }
+            ]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'top' } } }
+    });
+}
+if (agentNames.length) renderAgentLineChart(agentNames[0]);
+agentSelect.onchange = function() { renderAgentLineChart(this.value); };
+</script>
+<style>
+.dashboard-header { text-align: center; margin-bottom: 2rem; padding: 2rem 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; margin-bottom: 2rem; }
+.dashboard-header h1 { margin: 0; font-size: 2.5rem; font-weight: 700; }
+.subtitle { margin: 0.5rem 0; font-size: 1.1rem; opacity: 0.9; }
+.date-info { margin-top: 1rem; }
+.current-month { background: rgba(255, 255, 255, 0.2); padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600; }
+.container { max-width: 1600px; margin: 0 auto; padding: 0 32px; }
+.metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.metric-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); display: flex; align-items: center; transition: transform 0.2s ease; }
+.metric-card:hover { transform: translateY(-2px); }
+.metric-card.highlight { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+.metric-icon { font-size: 2rem; margin-right: 1rem; }
+.metric-content h3 { margin: 0 0 0.5rem 0; font-size: 0.9rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
+.metric-value { font-size: 1.8rem; font-weight: 700; }
+.positive { color: #10b981; }
+.negative { color: #ef4444; }
+.table-section, .recent-section { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 2rem; }
+.table-section h3, .recent-section h3 { margin: 0 0 1rem 0; color: #374151; }
+.table-container { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.data-table th { background: #f9fafb; padding: 0.75rem; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; }
+.data-table td { padding: 0.75rem; border-bottom: 1px solid #e5e7eb; }
+.data-table tr:hover { background: #f9fafb; }
+.status-badge { padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+.status-badge.active { background: #d1fae5; color: #065f46; }
+.status-badge.inactive { background: #fee2e2; color: #991b1b; }
+.type-badge { padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; }
+.type-badge.receipt { background: #dbeafe; color: #1e40af; }
+.type-badge.credit { background: #fef3c7; color: #92400e; }
+.type-badge.bill { background: #d1fae5; color: #065f46; }
+.dashboard-logo { height: 54px; margin-bottom: 10px; border-radius: 10px; box-shadow: 0 1px 6px #0002; display: block; margin-left: auto; margin-right: auto; }
+@media (max-width: 768px) { .metrics-grid { grid-template-columns: 1fr; } .dashboard-header h1 { font-size: 2rem; } .container { padding: 0 8px; } }
+</style>
+{% endblock %} 

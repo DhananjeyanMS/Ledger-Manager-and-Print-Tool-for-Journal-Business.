@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Ledger System{% endblock %}</title>
+    <style>
+        body { margin: 0; font-family: 'Arial', sans-serif; background: #f7f9fa; }
+        .header {
+            background: #1976d2;
+            color: #fff;
+            padding: 0 32px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px #e0e0e0;
+        }
+        .header .logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .header .menu {
+            display: flex;
+            gap: 18px;
+        }
+        .header .menu a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        .header .menu a:hover, .header .menu a.active {
+            background: #125ea2;
+        }
+        .main-content {
+            margin-top: 80px;
+            padding: 32px 0;
+            min-height: 80vh;
+        }
+        /* Modal styles */
+        .modal {
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.3); align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #fff; padding: 32px 40px; border-radius: 12px; box-shadow: 0 4px 24px #0002;
+            text-align: center; min-width: 320px;
+        }
+        .modal-content h3 { margin-top: 0; color: #1976d2; }
+        .modal-content .modal-btns { margin-top: 24px; display: flex; gap: 18px; justify-content: center; }
+        .modal-content button {
+            padding: 10px 24px; border: none; border-radius: 5px; font-size: 1em; font-weight: 500;
+            cursor: pointer; background: #1976d2; color: #fff; transition: background 0.2s;
+        }
+        .modal-content button:hover { background: #125ea2; }
+        .container {
+            max-width: 700px;
+            margin: 32px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #e0e0e0;
+            padding: 36px 32px 32px 32px;
+        }
+        .toggle-group {
+            justify-content: center;
+        }
+        .toggle-btn {
+            background: #e3eafc;
+            color: #1976d2;
+            border: none;
+            border-radius: 6px 6px 0 0;
+            padding: 12px 32px;
+            font-size: 1.1em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .toggle-btn.active {
+            background: #1976d2;
+            color: #fff;
+        }
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 24px;
+            margin-bottom: 18px;
+        }
+        form label {
+            grid-column: span 1;
+            font-weight: 500;
+            color: #222;
+            margin-bottom: 2px;
+        }
+        form input, form select, form button {
+            grid-column: span 1;
+            padding: 8px 10px;
+            border: 1px solid #bbb;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        form input[type=submit], form button[type=submit], .action-btn {
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s;
+            padding: 10px 0;
+        }
+        form input[type=submit]:hover, form button[type=submit]:hover, .action-btn:hover {
+            background: #125ea2;
+        }
+        .msg {
+            margin-top: 12px;
+            color: #d32f2f;
+            text-align: center;
+            font-weight: 500;
+        }
+        .edit-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 12px;
+            font-size: 1em;
+            background: #f9fbfd;
+        }
+        .edit-table th, .edit-table td {
+            border: 1px solid #b6c6e3;
+            padding: 8px 6px;
+            text-align: center;
+        }
+        .edit-table th {
+            background: #e3eafc;
+            color: #1976d2;
+            font-weight: 600;
+        }
+        .edit-table tr:nth-child(even) {
+            background: #f3f6fa;
+        }
+        .edit-table tr:hover {
+            background: #eaf2ff;
+        }
+        .edit-table button {
+            background: #1976d2;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 14px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .edit-table button:disabled {
+            background: #b6c6e3;
+            color: #fff;
+            cursor: not-allowed;
+        }
+        @media (max-width: 800px) {
+            .container { padding: 18px 4vw; }
+            form { grid-template-columns: 1fr; }
+        }
+        .header-logo { height: 38px; vertical-align: middle; margin-right: 12px; border-radius: 6px; box-shadow: 0 1px 4px #0001; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" class="header-logo"> மல்லிகை மகள் கணக்கு புத்தகம்</div>
+        <div class="menu">
+            <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Home</a>
+            <a href="/add_agent" {% if request.path.startswith('/add_agent') %}class="active"{% endif %}>Add Agent</a>
+            <a href="/add_receipt" {% if request.path.startswith('/add_receipt') %}class="active"{% endif %}>Add Receipt</a>
+            <a href="/add_credit" {% if request.path.startswith('/add_credit') %}class="active"{% endif %}>Add Credit</a>
+            <a href="/add_bill" {% if request.path.startswith('/add_bill') %}class="active"{% endif %}>Bill Entry</a>
+            <a href="/view_ledger" {% if request.path.startswith('/view_ledger') %}class="active"{% endif %}>View/Print Ledger</a>
+            <a href="/print" {% if request.path.startswith('/print') %}class="active"{% endif %}>Print</a>
+        </div>
+    </div>
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+    <!-- Success Modal -->
+    <div class="modal" id="successModal">
+        <div class="modal-content">
+            <h3 id="modalMsg">Submitted successfully!</h3>
+            <div class="modal-btns">
+                <button id="goMainBtn">Go to Main Page</button>
+                <button id="addAnotherBtn">Add Another Entry</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Modal logic
+        function showSuccessModal(msg, goMainUrl, addAnotherUrl) {
+            document.getElementById('modalMsg').innerText = msg || 'Submitted successfully!';
+            document.getElementById('successModal').classList.add('active');
+            document.getElementById('goMainBtn').onclick = function() { window.location.href = goMainUrl || '/'; };
+            document.getElementById('addAnotherBtn').onclick = function() { window.location.href = addAnotherUrl || window.location.pathname; };
+        }
+        function hideSuccessModal() {
+            document.getElementById('successModal').classList.remove('active');
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 

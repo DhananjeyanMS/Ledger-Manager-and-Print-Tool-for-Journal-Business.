@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="print-page-container">
+    <h2>Print Bills, Credits, and Receipts</h2>
+    <form id="printForm" method="get" action="/print_docs" target="_blank" style="margin-bottom: 24px;">
+        <label for="agentSelect">Select Agent:</label>
+        <select id="agentSelect" name="agent_code" required>
+            <option value="all">All</option>
+            {% for agent in agents %}
+                <option value="{{ agent.agent_Code }}">{{ agent.agent_Name }} ({{ agent.area }})</option>
+            {% endfor %}
+        </select>
+        <label for="month" style="margin-left: 16px;">Month:</label>
+        <select id="month" name="month" required style="width: 80px;"></select>
+        <label for="year" style="margin-left: 8px;">Year:</label>
+        <select id="year" name="year" required style="width: 90px;"></select>
+        <button type="submit" style="margin-left: 16px;">Print</button>
+    </form>
+    <div style="color: #666; font-size: 0.95em;">Select an agent or 'All' and a month/year to print bills, credits, and receipts. Bills are for the selected month; receipts/credits are for the previous month.</div>
+</div>
+<script>
+// Populate month/year dropdowns
+const now = new Date();
+const monthSel = document.getElementById('month');
+const yearSel = document.getElementById('year');
+for(let m=1; m<=12; m++) {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.text = m;
+    if(m === now.getMonth()+1) opt.selected = true;
+    monthSel.appendChild(opt);
+}
+for(let y=now.getFullYear()-2; y<=now.getFullYear()+2; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.text = y;
+    if(y === now.getFullYear()) opt.selected = true;
+    yearSel.appendChild(opt);
+}
+</script>
+{% endblock %} 

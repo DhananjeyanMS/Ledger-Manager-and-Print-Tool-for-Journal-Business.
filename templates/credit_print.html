@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print Credit Bill</title>
+    <style>
+    @media print {
+        body {
+            margin: 0;
+            padding: 10mm;
+            font-size: 12px;
+        }
+        .no-print {
+            display: none;
+        }
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+        .print-block {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+    }
+    body {
+        font-family: Arial, sans-serif;
+        width: 90%;
+        margin: 0 auto;
+        padding: 10px;
+        font-size: 12px;
+    }
+    .header {
+        text-align: center;
+        font-weight: bold;
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+    .bill-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 8px;
+    }
+    .bill-table th, .bill-table td {
+        border: 1px solid black;
+        padding: 4px;
+        text-align: center;
+    }
+    .right-align {
+        text-align: right;
+    }
+    .footer {
+        margin-top: 10px;
+        font-size: 12px;
+    }
+    </style>
+</head>
+<body>
+<div class="print-block">
+<!-- Credit Section Start -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+    <div style="text-align: left; width: 33%;">
+        <div style="font-size: 18px; font-weight: bold;">MALLIGAI MAGAL</div>
+        <div style="font-size: 11px;">
+            New # 4, Old # 46, Taylors Estate 2nd Street,<br>
+            Kodambakkam, Chennai - 600 024.<br>
+            Phone : 044 - 2472 0565, 75501 83899
+        </div>
+    </div>
+    <div style="width: 34%; text-align: center;">
+        <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Logo" style="height: 60px;">
+        <div style="font-size: 14px; font-weight: bold;">CREDIT BILL</div>
+        <div>No : <strong>{{ ledger.id }}</strong></div>
+    </div>
+    <div style="text-align: right; width: 33%;">
+        <div style="font-size: 15px;"><strong>Agent Name:</strong> {{ agent.agent_Name }}</div>
+        <div style="font-size: 15px;"><strong>Location:</strong>{{ agent.area }}</div>
+        <div style="margin-top: 10px; font-size: 15px;"><strong>Date:</strong> {{ ledger.credit_date }}</div>
+    </div>
+</div>
+<table class="bill-table">
+    <thead>
+    <tr>
+        <th>S.No</th>
+        <th>Particulars</th>
+        <th>Rate</th>
+        <th>Copies</th>
+        <th>Discount</th>
+        <th>Amount (Rs.)</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% set items = [
+        ('Malligai Magal', ledger.ret_count_MM, 40),
+        ('Nalla Saappadu', ledger.ret_count_NS, 50),
+        ('Valli Novel', ledger.ret_count_Valli, 40),
+        ('Vaani Novel', ledger.ret_count_Vani, 40),
+        ('Azhagi Novel', ledger.ret_count_Azhagi, 40),
+        ('Arasi Novel', ledger.ret_count_Arasi, 40),
+        ('Thriller Novel', ledger.ret_count_Thriller, 40)
+    ] %}
+    {% for idx in range(1, items|length + 1) %}
+        {% set name, count, rate = items[idx - 1] %}
+        {% set amt = (count or 0) * rate %}
+        {% set discount = amt * 0.25 %}
+        {% set final_amt = amt - discount %}
+        <tr>
+            <td>{{ idx }}</td>
+            <td>{{ name }}</td>
+            <td>Rs.{{ rate }}/-</td>
+            <td>{{ count or 0 }}</td>
+            <td>25%</td>
+            <td>{{ "%.2f"|format(final_amt) }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="5" class="right-align"><strong>Total Credit Amount</strong></td>
+            <td>{{ "%.2f"|format(ledger.credit_Amount) }}</td>
+        </tr>
+    </tfoot>
+</table>
+<div class="footer">
+  <div style="margin-top: 20px;">
+    <div style="float: left;">
+        <div>Cir. Manager</div>
+        <div><strong>for MALLIGAI MAGAL</strong></div>
+    </div>
+    <div style="float: right; font-weight: bold;">
+        (Rs. {{ '%.2f' | format(ledger.credit_Amount) }} ONLY /-)
+    </div>
+    <div style="clear: both;"></div>
+</div>
+</div>
+<!-- Credit Section End -->
+</div>
+</body>
+</html> 

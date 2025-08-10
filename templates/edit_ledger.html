@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Ledger Entry</title>
+    <style>
+        .msg { margin-top: 16px; color: #d32f2f; text-align: center; font-weight: bold; }
+        .disabled { background: #f0f0f0; color: #888; pointer-events: none; }
+    </style>
+</head>
+<body style="font-family: Arial, sans-serif; display: flex; justify-content: center;">
+    <form method="POST" style="width: 600px; padding: 20px; border: 1px solid #ccc; border-radius: 10px;">
+        <h2 style="text-align: center;">Edit Ledger Entry</h2>
+        {% if message %}
+            <div class="msg">{{ message }}</div>
+        {% endif %}
+        <div id="edit-msg" class="msg"></div>
+        <input type="text" name="ledger_id" id="ledger_id" readonly>
+        <label for="area"><strong>Area:</strong></label>
+        <select name="area" id="area" onchange="populateLatestLedger()" required>
+            <option value="">-- Select Area --</option>
+            {% for area in areas %}
+                <option value="{{ area }}">{{ area }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="agent_name"><strong>Agent:</strong></label>
+        <input type="text" name="agent_name" id="agent_name" readonly><br><br>
+
+        <label for="agent_code"><strong>Agent Code:</strong></label>
+        <input type="text" name="agent_code" id="agent_code" readonly><br><br>
+
+        <label for="old_balance"><strong>Old balance:</strong></label>
+        <input type="number" name="old_balance" step="0.01" id="old_balance" readonly><br><br>
+
+        <label for="entry_date"><strong>Entry date</strong></label>
+        <input type="date" name="entry_date" id="entry_date" readonly><br><br>
+
+        <div style="margin-bottom: 40px;">
+            <h3>Receipt Entry</h3>
+            Receipt Date: <input type="date" name="receipt_date" id="receipt_date"><br><br>
+            Receipt Amount: <input type="number" name="receipt_Amount" step="0.01" id="receipt_Amount"><br><br>
+        </div>
+
+        <!-- Section: Credit Calculation -->
+        <div style="margin-bottom: 40px;">
+            <h3>Credit Calculation</h3>
+            Credit Date: <input type="date" name="credit_date" id="credit_date"><br><br>
+            <strong>Return Count</strong><br><br>
+            Malligai Magal: <input type="number" name="ret_count_MM" id="ret_count_MM"><br><br>
+            Nalla sapadu: <input type="number" name="ret_count_NS" id="ret_count_NS"><br><br>
+            Suba varam: <input type="number" name="ret_count_SV" id="ret_count_SV"><br><br>
+            Valli: <input type="number" name="ret_count_Valli" id="ret_count_Valli"><br><br>
+            Vani: <input type="number" name="ret_count_Vani" id="ret_count_Vani"><br><br>
+            Azhagi: <input type="number" name="ret_count_Azhagi" id="ret_count_Azhagi"><br><br>
+            Arasi: <input type="number" name="ret_count_Arasi" id="ret_count_Arasi"><br><br>
+            Thriller: <input type="number" name="ret_count_Thriller" id="ret_count_Thriller"><br><br>
+            Extras: <input type="number" name="extras" id="extras" step="0.01"><br><br>
+            Incentive: <input type="number" name="Incentive" step="0.01" id="Incentive"><br><br>
+            Transport: <input type="number" name="Transport" step="0.01" id="Transport"><br><br>
+            Postal Courier: <input type="number" name="Postal_Courier" step="0.01" id="Postal_Courier"><br><br>
+            <span id="credit_loader" style="display:none;">Calculating...</span><br>
+            Calculated Credit Amount: <input type="number" name="credit_Amount" step="0.01" id="credit_Amount" readonly><br><br>
+        </div>
+
+        <!-- Section: Bill & Balance -->
+        <div>
+            <h3>Bill & New Balance</h3>
+            Bill Date: <input type="date" name="bill_date" id="bill_date"><br><br>
+            <strong>Bill Count</strong><br><br>
+            Malligai Magal: <input type="number" name="count_MM" id="count_MM"><br><br>
+            Nalla sapadu: <input type="number" name="count_NS" id="count_NS"><br><br>
+            Suba varam: <input type="number" name="count_SV" id="count_SV"><br><br>
+            Valli: <input type="number" name="count_Valli" id="count_Valli"><br><br>
+            Vani: <input type="number" name="count_Vani" id="count_Vani"><br><br>
+            Azhagi: <input type="number" name="count_Azhagi" id="count_Azhagi"><br><br>
+            Arasi: <input type="number" name="count_Arasi" id="count_Arasi"><br><br>
+            Thriller: <input type="number" name="count_Thriller" id="count_Thriller"><br><br>
+            <span id="bill_loader" style="display:none;">Calculating...</span><br>
+            Calculated Bill Amount: <input type="number" name="bill_Amount" step="0.01" id="bill_Amount" readonly><br><br>
+            New Balance Amount: <input type="number" name="new_balance" step="0.01" id="new_balance" readonly><br><br>
+        </div>
+
+        <div style="text-align: center;">
+            <input type="submit" value="Update Entry">
+        </div>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const latestLedgerData = JSON.parse('{{ latest_ledger_data | tojson | safe }}');
+            let currentEditable = true;
+            function populateLatestLedger() {
+                const area = document.getElementById("area").value;
+                const entry = latestLedgerData.find(a => a.area === area);
+                if (entry) {
+                    document.getElementById("ledger_id").value = entry.ledger_id;
+                    document.getElementById("agent_name").value = entry.agent_name;
+                    document.getElementById("agent_code").value = entry.agent_code;
+                    document.getElementById("old_balance").value = entry.old_balance;
+                    document.getElementById("entry_date").value = entry.entry_date;
+                    document.getElementById("receipt_date").value = entry.receipt_date;
+                    document.getElementById("bill_date").value = entry.bill_date;
+                    document.getElementById("credit_date").value = entry.credit_date;
+                    document.getElementById("receipt_Amount").value = entry.receipt_Amount;
+                    document.getElementById("ret_count_MM").value = entry.ret_count_MM;
+                    document.getElementById("ret_count_NS").value = entry.ret_count_NS;
+                    document.getElementById("ret_count_SV").value = entry.ret_count_SV;
+                    document.getElementById("ret_count_Valli").value = entry.ret_count_Valli;
+                    document.getElementById("ret_count_Vani").value = entry.ret_count_Vani;
+                    document.getElementById("ret_count_Azhagi").value = entry.ret_count_Azhagi;
+                    document.getElementById("ret_count_Arasi").value = entry.ret_count_Arasi;
+                    document.getElementById("ret_count_Thriller").value = entry.ret_count_Thriller;
+                    document.getElementById("extras").value = entry.extras;
+                    document.getElementById("Incentive").value = entry.Incentive;
+                    document.getElementById("Transport").value = entry.Transport;
+                    document.getElementById("Postal_Courier").value = entry.Postal_Courier;
+                    document.getElementById("count_MM").value = entry.count_MM;
+                    document.getElementById("count_NS").value = entry.count_NS;
+                    document.getElementById("count_SV").value = entry.count_SV;
+                    document.getElementById("count_Valli").value = entry.count_Valli;
+                    document.getElementById("count_Vani").value = entry.count_Vani;
+                    document.getElementById("count_Azhagi").value = entry.count_Azhagi;
+                    document.getElementById("count_Arasi").value = entry.count_Arasi;
+                    document.getElementById("count_Thriller").value = entry.count_Thriller;
+                    document.getElementById("credit_Amount").value = entry.credit_Amount;
+                    document.getElementById("bill_Amount").value = entry.bill_Amount;
+                    document.getElementById("new_balance").value = entry.new_balance_Amount;
+                    // Disable fields if not editable
+                    currentEditable = entry.editable;
+                    setEditableFields(currentEditable);
+                    var editMsg = document.getElementById('edit-msg');
+                    if (!currentEditable && entry.ledger_type === 'bill') {
+                        editMsg.innerText = 'Only the most recent bill for an agent/area can be edited.';
+                    } else if (!currentEditable) {
+                        editMsg.innerText = 'Cannot edit: Bill already exists for this agent/area/month.';
+                    } else {
+                        editMsg.innerText = '';
+                    }
+                }
+            }
+            function setEditableFields(editable) {
+                const form = document.querySelector('form');
+                Array.from(form.elements).forEach(el => {
+                    if (el.name && el.name !== 'area' && el.name !== 'ledger_id') {
+                        el.readOnly = !editable;
+                        if (!editable) el.classList.add('disabled');
+                        else el.classList.remove('disabled');
+                    }
+                });
+                document.querySelector('input[type=submit]').disabled = !editable;
+            }
+            // Ensure the correct state is set on page load
+            populateLatestLedger();
+            document.getElementById('area').addEventListener('change', populateLatestLedger);
+        });
+    </script>
+</body>
+</html>
