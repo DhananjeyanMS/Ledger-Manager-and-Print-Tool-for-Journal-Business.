@@ -1,4 +1,4 @@
-# 📒 Ledger Management & Dashboard System
+# 📒 Ledger Management System with DA and Print tool
 
 A **Flask-based ledger management application** for tracking receipts, credits, and performance of agents across different areas, complete with **custom bill/receipt/credit print generation**.  
 Designed for small to medium businesses that need a simple yet robust accounting tool with business-specific templates and locking rules for accounting integrity.
