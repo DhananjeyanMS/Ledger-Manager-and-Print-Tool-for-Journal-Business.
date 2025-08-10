@@ -70,10 +70,6 @@ Designed for small to medium businesses that need a simple yet robust accounting
 ## 🚀 Getting Started
 
 ### 1️⃣ Clone the repository
-```bash
-git clone https://github.com/yourusername/ledger-dashboard.git
-cd ledger-dashboard
-````
 
 ### 2️⃣ Create a virtual environment
 
@@ -84,10 +80,6 @@ venv\Scripts\activate     # Windows
 ```
 
 ### 3️⃣ Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
 
 ### 4️⃣ Initialize the database
 
@@ -165,33 +157,6 @@ The system supports **direct print previews** for:
 4. The document is optimized for printing or PDF export.
 5. The user can print directly or share the PDF via email/messaging.
 
-**Example Bill:**
-
-```
-Bill for Agent: John Doe
-Area: West Zone
-Date: July 2025
-Total Due: ₹15,000
----------------------------------------
-Item Description   Qty   Rate   Amount
-...
----------------------------------------
-Thank you for your business!
-```
-
----
-
-## 📈 Example Charts
-
-The app uses **Chart.js** to display:
-
-* **Monthly Totals** (line chart)
-* **Agent Performance** (bar chart)
-
-These charts are populated with aggregated data from SQLAlchemy queries for efficiency.
-
----
-
 ## 🧩 Future Improvements
 
 * Authentication & role-based access control.
@@ -205,5 +170,3 @@ Developed by **\[Dhananjeyan M S]**
 📧 [msdhanan98@gmail.com](mailto:msdhanan98@example.com)
 🌐 [Portfolio](https://unimad.notion.site/Dhananjeyan-M-S-e9b2328ee41c4acdae01421360580e76)
 
-That would make the setup steps bulletproof.
-```
