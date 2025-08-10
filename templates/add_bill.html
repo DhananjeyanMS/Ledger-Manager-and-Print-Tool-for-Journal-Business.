@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% block title %}Add Bill | Malligai Magal Ledger{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="toggle-group" style="display: flex; gap: 16px; margin-bottom: 24px;">
+        <button id="addTab" class="toggle-btn active" type="button">Add Entry</button>
+        <button id="editTab" class="toggle-btn" type="button">Edit Entry</button>
+    </div>
+    <div id="formSection">
+        <h2 id="formTitle">Add Bill Entry</h2>
+        <form method="POST" id="billForm">
+            <label for="area">Area</label>
+            <select name="area" id="area" required>
+                <option value="">-- Select Area --</option>
+                {% for agent in agents %}
+                    <option value="{{ agent.area }}">{{ agent.area }}</option>
+                {% endfor %}
+            </select>
+            <label for="agent_name">Agent</label>
+            <input type="text" name="agent_name" id="agent_name" readonly>
+            <label for="agent_code">Agent Code</label>
+            <input type="text" name="agent_code" id="agent_code" readonly>
+            <label for="old_balance">Old Balance</label>
+            <input type="number" name="old_balance" step="0.01" id="old_balance" readonly>
+            <label for="entry_date">Entry Date</label>
+            <input type="date" name="entry_date" id="entry_date" required>
+            <label for="bill_date">Bill Date</label>
+            <input type="date" name="bill_date" id="bill_date" required>
+            <script>        
+                const today = new Date();                                
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);                   
+                         
+                const year = firstDay.getFullYear();
+                const month = String(firstDay.getMonth() + 1).padStart(2, '0');
+                const day = String(firstDay.getDate()).padStart(2, '0');
+                const formatted = `${year}-${month}-${day}`;
+                document.getElementById('entry_date').value = formatted;
+                document.getElementById('bill_date').value = formatted;
+              </script>
+            <div class="section-header" style="grid-column: 1 / -1; margin-top: 18px; font-weight: bold;">Bill Count</div>
+            <div class="bill-group" style="grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 12px 24px;">
+                <div><label>Malligai Magal</label><input type="number" name="count_MM" id="count_MM"></div>
+                <div><label>Nalla sapadu</label><input type="number" name="count_NS" id="count_NS"></div>
+                <div><label>Suba varam</label><input type="number" name="count_SV" id="count_SV"></div>
+                <div><label>Valli</label><input type="number" name="count_Valli" id="count_Valli"></div>
+                <div><label>Vani</label><input type="number" name="count_Vani" id="count_Vani"></div>
+                <div><label>Azhagi</label><input type="number" name="count_Azhagi" id="count_Azhagi"></div>
+                <div><label>Arasi</label><input type="number" name="count_Arasi" id="count_Arasi"></div>
+                <div><label>Thriller</label><input type="number" name="count_Thriller" id="count_Thriller"></div>
+            </div>
+            <label for="bill_Amount">Calculated Bill Amount</label>
+            <input type="number" name="bill_Amount" step="0.01" id="bill_Amount" readonly>
+            <label for="new_balance">New Balance Amount</label>
+            <input type="number" name="new_balance" step="0.01" id="new_balance" readonly>
+            <div style="grid-column: 1 / -1; text-align: center; margin-top: 18px;">
+                <input type="submit" id="submitBtn" value="Add Bill" style="width: 60%;">
+            </div>
+        </form>
+        {% if message %}
+            <div class="msg">{{ message }}</div>
+        {% endif %}
+    </div>
+    <div id="editSection" style="display:none;">
+        <h2>Edit Bill Entries</h2>
+        <div style="margin-bottom: 16px;">
+            <label for="editArea">Area</label>
+            <select id="editArea">
+                <option value="">-- Select Area --</option>
+                {% for agent in agents %}
+                    <option value="{{ agent.area }}">{{ agent.area }}</option>
+                {% endfor %}
+            </select>
+            <button id="loadBills" type="button">Load</button>
+        </div>
+        <table id="billTable" class="edit-table" style="width:100%; margin-bottom: 24px; display:none;">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Entry Date</th><th>Bill Date</th><th>Amount</th><th>Agent</th><th>Edit</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const agentData = JSON.parse('{{ agent_data | tojson | safe }}');
+// Toggle logic
+const addTab = document.getElementById('addTab');
+const editTab = document.getElementById('editTab');
+const formSection = document.getElementById('formSection');
+const editSection = document.getElementById('editSection');
+addTab.onclick = function() {
+    addTab.classList.add('active'); editTab.classList.remove('active');
+    formSection.style.display = '';
+    editSection.style.display = 'none';
+    document.getElementById('formTitle').textContent = 'Add Bill Entry';
+    document.getElementById('submitBtn').value = 'Add Bill';
+    document.getElementById('billForm').reset();
+    document.getElementById('area').removeAttribute('disabled');
+    document.getElementById('agent_name').removeAttribute('disabled');
+    document.getElementById('agent_code').removeAttribute('disabled');
+    document.getElementById('old_balance').removeAttribute('disabled');
+    document.getElementById('entry_date').removeAttribute('disabled');
+    document.getElementById('bill_date').removeAttribute('disabled');
+    document.getElementById('count_MM').removeAttribute('disabled');
+    document.getElementById('count_NS').removeAttribute('disabled');
+    document.getElementById('count_SV').removeAttribute('disabled');
+    document.getElementById('count_Valli').removeAttribute('disabled');
+    document.getElementById('count_Vani').removeAttribute('disabled');
+    document.getElementById('count_Azhagi').removeAttribute('disabled');
+    document.getElementById('count_Arasi').removeAttribute('disabled');
+    document.getElementById('count_Thriller').removeAttribute('disabled');
+};
+editTab.onclick = function() {
+    editTab.classList.add('active'); addTab.classList.remove('active');
+    formSection.style.display = 'none';
+    editSection.style.display = '';
+    document.getElementById('formTitle').textContent = 'Edit Bill Entry';
+    document.getElementById('submitBtn').value = 'Update Bill';
+    document.getElementById('billForm').reset();
+    document.getElementById('area').setAttribute('disabled', 'disabled');
+    document.getElementById('agent_name').setAttribute('disabled', 'disabled');
+    document.getElementById('agent_code').setAttribute('disabled', 'disabled');
+    document.getElementById('old_balance').setAttribute('disabled', 'disabled');
+    document.getElementById('entry_date').setAttribute('disabled', 'disabled');
+    document.getElementById('bill_date').setAttribute('disabled', 'disabled');
+    document.getElementById('count_MM').setAttribute('disabled', 'disabled');
+    document.getElementById('count_NS').setAttribute('disabled', 'disabled');
+    document.getElementById('count_SV').setAttribute('disabled', 'disabled');
+    document.getElementById('count_Valli').setAttribute('disabled', 'disabled');
+    document.getElementById('count_Vani').setAttribute('disabled', 'disabled');
+    document.getElementById('count_Azhagi').setAttribute('disabled', 'disabled');
+    document.getElementById('count_Arasi').setAttribute('disabled', 'disabled');
+    document.getElementById('count_Thriller').setAttribute('disabled', 'disabled');
+};
+// Populate agent details in Add form
+if(document.getElementById('area')) {
+    document.getElementById('area').addEventListener('change', function() {
+        const area = this.value;
+        const agent = agentData.find(a => a.area === area);
+        if (agent) {
+            document.getElementById('agent_name').value = agent.agent_Name;
+            document.getElementById('agent_code').value = agent.agent_Code;
+            document.getElementById('old_balance').value = agent.old_balance;
+        } else {
+            document.getElementById('agent_name').value = '';
+            document.getElementById('agent_code').value = '';
+            document.getElementById('old_balance').value = '';
+        }
+    });
+}
+// Auto-calculate bill amount and new balance
+function getVal(id) {
+    return parseFloat(document.getElementById(id).value) || 0;
+}
+function calculateBill() {
+    let base40 = getVal('count_MM') + getVal('count_Valli') + getVal('count_Vani') +
+                 getVal('count_Azhagi') + getVal('count_Arasi') + getVal('count_Thriller');
+    let base50 = getVal('count_NS') + getVal('count_SV');
+    let total = (base40 * 40) + (base50 * 50);
+    let bill = total - (total * 0.25);
+    document.getElementById('bill_Amount').value = bill.toFixed(2);
+    calculateNewBalance();
+}
+function calculateNewBalance() {
+    let old_balance = getVal('old_balance');
+    let bill = getVal('bill_Amount');
+    let area = document.getElementById('area').value;
+    let bill_date = document.getElementById('bill_date').value;
+    
+    if (!area || !bill_date) {
+        // If we don't have area or bill date, just calculate with 0 credits/receipts
+        let new_bal = old_balance + bill;
+        document.getElementById('new_balance').value = new_bal.toFixed(2);
+        return;
+    }
+    
+    // Get month and year from bill date (this is when bill is created)
+    let date = new Date(bill_date);
+    let bill_month = date.getMonth() + 1; // JavaScript months are 0-indexed
+    let bill_year = date.getFullYear();
+    
+    // Calculate the target month (the month this bill is for - previous month)
+    let target_month = bill_month - 1;
+    let target_year = bill_year;
+    if (target_month === 0) {
+        target_month = 12;
+        target_year = bill_year - 1;
+    }
+    
+    // Fetch total receipts and credits for the target month (previous month)
+    fetch(`/get_monthly_totals?area=${area}&month=${target_month}&year=${target_year}&bill_date=${encodeURIComponent(bill_date)}`)
+        .then(r => r.json())
+        .then(data => {
+            let total_receipts = data.total_receipts || 0;
+            let total_credits = data.total_credits || 0;
+            let new_bal = old_balance - total_credits - total_receipts + bill;
+            document.getElementById('new_balance').value = new_bal.toFixed(2);
+        })
+        .catch(error => {
+            console.error('Error fetching monthly totals:', error);
+            // Fallback calculation
+            let new_bal = old_balance + bill;
+            document.getElementById('new_balance').value = new_bal.toFixed(2);
+        });
+}
+const billInputs = [
+    'count_MM', 'count_NS', 'count_SV', 'count_Valli', 'count_Vani',
+    'count_Azhagi', 'count_Arasi', 'count_Thriller'
+];
+billInputs.forEach(id => {
+    document.getElementById(id).addEventListener('input', calculateBill);
+});
+
+// Also trigger calculation when area or bill date changes
+document.getElementById('area').addEventListener('change', calculateNewBalance);
+document.getElementById('bill_date').addEventListener('change', calculateNewBalance);
+
+window.onload = calculateBill;
+// Load bills for edit
+const loadBtn = document.getElementById('loadBills');
+loadBtn.onclick = function() {
+    const area = document.getElementById('editArea').value;
+    if(!area) return;
+    fetch(`/list_bills?area=${area}`)
+        .then(r => r.json())
+        .then(data => {
+            const table = document.getElementById('billTable');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            if(data.length === 0) { table.style.display = 'none'; return; }
+            table.style.display = '';
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${row.id}</td><td>${row.entry_date}</td><td>${row.bill_date}</td><td>${row.bill_Amount}</td><td>${row.agent_name}</td>` +
+                    `<td><button ${!row.editable ? 'disabled title=\"Only most recent bill editable\"' : ''} onclick=\"editBill(${row.id})\">Edit</button></td>`;
+                tbody.appendChild(tr);
+            });
+        });
+};
+// Edit bill logic (update form and enable calculation)
+window.editBill = function(id) {
+    fetch(`/edit_bill/${id}`)
+        .then(r => r.json())
+        .then(data => {
+            if(!data.editable) return alert('Only the most recent bill for an agent/area can be edited.');
+            
+            // Switch to Add tab and show form
+            addTab.classList.add('active'); 
+            editTab.classList.remove('active');
+            formSection.style.display = '';
+            editSection.style.display = 'none';
+            
+            // Update form for editing
+            document.getElementById('formTitle').textContent = 'Edit Bill Entry';
+            document.getElementById('submitBtn').value = 'Update Bill';
+            document.getElementById('billForm').setAttribute('action', `/edit_bill/${id}`);
+            document.getElementById('billForm').setAttribute('method', 'POST');
+            
+            // Fill form fields
+            document.getElementById('area').value = data.area;
+            document.getElementById('agent_name').value = data.agent_name;
+            document.getElementById('agent_code').value = data.agent_code;
+            document.getElementById('old_balance').value = data.old_balance;
+            document.getElementById('entry_date').value = data.entry_date;
+            document.getElementById('bill_date').value = data.bill_date;
+            document.getElementById('count_MM').value = data.count_MM;
+            document.getElementById('count_NS').value = data.count_NS;
+            document.getElementById('count_SV').value = data.count_SV;
+            document.getElementById('count_Valli').value = data.count_Valli;
+            document.getElementById('count_Vani').value = data.count_Vani;
+            document.getElementById('count_Azhagi').value = data.count_Azhagi;
+            document.getElementById('count_Arasi').value = data.count_Arasi;
+            document.getElementById('count_Thriller').value = data.count_Thriller;
+            document.getElementById('bill_Amount').value = data.bill_Amount;
+            document.getElementById('new_balance').value = data.new_balance;
+            
+            // Enable all fields for editing
+            document.getElementById('area').removeAttribute('disabled');
+            document.getElementById('agent_name').removeAttribute('disabled');
+            document.getElementById('agent_code').removeAttribute('disabled');
+            document.getElementById('old_balance').removeAttribute('disabled');
+            document.getElementById('entry_date').removeAttribute('disabled');
+            document.getElementById('bill_date').removeAttribute('disabled');
+            document.getElementById('count_MM').removeAttribute('disabled');
+            document.getElementById('count_NS').removeAttribute('disabled');
+            document.getElementById('count_SV').removeAttribute('disabled');
+            document.getElementById('count_Valli').removeAttribute('disabled');
+            document.getElementById('count_Vani').removeAttribute('disabled');
+            document.getElementById('count_Azhagi').removeAttribute('disabled');
+            document.getElementById('count_Arasi').removeAttribute('disabled');
+            document.getElementById('count_Thriller').removeAttribute('disabled');
+            
+            // Enable calculation in edit mode
+            billInputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', calculateBill);
+            });
+            calculateBill();
+        });
+};
+</script>
+{% if success %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        showSuccessModal('Bill entry added successfully!', '/', '/add_bill');
+    });
+</script>
+{% endif %}
+
+<style>
+/* Simple and neat bill-group styling */
+.bill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+.bill-group > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 100px;
+}
+
+.bill-group > div label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #374151;
+}
+
+.bill-group > div input {
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.bill-group > div input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .bill-group {
+        gap: 12px;
+        padding: 12px;
+    }
+    
+    .bill-group > div {
+        min-width: 80px;
+    }
+}
+</style>
+
+{% endblock %} 
